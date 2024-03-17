@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Text
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
+from wtforms import StringField, SubmitField, PasswordField
 from wtforms.validators import DataRequired, URL
 from flask_ckeditor import CKEditor, CKEditorField
 from datetime import date
@@ -56,6 +56,12 @@ class BlogForm(FlaskForm):
     img_url = StringField("Blog Image URL")
     body = CKEditorField('Blog content')
     submit = SubmitField('Submit Post')
+
+class User(FlaskForm):
+    email = StringField("Email")
+    password = PasswordField("Password")
+    name = StringField("Your Name")
+    submit = SubmitField("Sign me Up!")
 
 with app.app_context():
     db.create_all()
@@ -119,13 +125,12 @@ def edit_post(post_id):
         item.subtitle = form.subtitle.data
         item.author = form.author.data
         item.img_url = form.img_url.data
-        print(form.body.data)
+        
         item.body = form.body.data
         item.date=date.today().strftime("%B %d, %Y")
-        # db.session.add(item)
+        
         db.session.commit()
-        # get_item = BlogPost.query.get(post_id)
-        # print(get_item.body)
+
         return redirect('/')    
     return render_template("make-post.html", form=form)
 
@@ -136,6 +141,17 @@ def delete_post(post_id):
     db.session.delete(post)
     db.session.commit()
     return redirect('/')
+
+# TODO: register() to register a new user
+@app.route('/register', methods=["GET","POST"])
+def register():
+    user_form = User()
+    return render_template ("register.html", form=user_form)
+
+# TODO: login() to login an user
+@app.route('/login',methods=["GET","POST"])
+def login():
+    return render_template("login.html")
 
 # Below is the code from previous lessons. No changes needed.
 @app.route("/about")
